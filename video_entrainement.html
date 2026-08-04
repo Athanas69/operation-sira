@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRANSMISSION SECRÈTE — AGENCE POUTOU</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+#screen {
+    width: 100%;
+    max-width: 800px;
+    padding: 40px;
+    text-align: center;
+}
+.line {
+    font-size: 18px;
+    line-height: 1.8;
+    letter-spacing: 2px;
+    opacity: 0;
+    transform: translateY(20px);
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+.line.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.8s ease;
+}
+.scanline {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.15),
+        rgba(0,0,0,0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 100;
+}
+.flicker {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.02);
+    pointer-events: none;
+    z-index: 99;
+    animation: flicker 0.15s infinite;
+}
+@keyframes flicker {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+.glitch {
+    animation: glitch 3s infinite;
+}
+@keyframes glitch {
+    0%, 90%, 100% { transform: translate(0); }
+    92% { transform: translate(-2px, 1px); }
+    94% { transform: translate(2px, -1px); }
+    96% { transform: translate(-1px, 2px); }
+}
+#mission-valid {
+    font-size: 36px;
+    color: #0f0;
+    letter-spacing: 8px;
+    margin-top: 40px;
+    opacity: 0;
+}
+#destination {
+    font-size: 48px;
+    color: #fff;
+    letter-spacing: 12px;
+    margin-top: 20px;
+    opacity: 0;
+    text-shadow: 0 0 20px rgba(255,255,255,0.5);
+}
+.blink {
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+#play-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 50px;
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    z-index: 200;
+}
+#play-btn:hover {
+    background: #fff;
+    color: #000;
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="flicker"></div>
+
+<button id="play-btn" onclick="startVideo()">▶ LANCER LA TRANSMISSION</button>
+
+<div id="screen" style="display:none;">
+    <div class="line" data-delay="500">[TRANSMISSION ENCRYPTÉE]</div>
+    <div class="line" data-delay="1500">[DÉCRYPTAGE...]</div>
+    <div class="line" data-delay="2500">[VOIX MODIFIÉE — NIVEAU 7]</div>
+    <div class="line" data-delay="4000">— — — — — — — — — — — — —</div>
+    <div class="line" data-delay="5000">Bonjour Agent Bibou.</div>
+    <div class="line" data-delay="7000">Si vous entendez ce message, cela signifie que votre candidature est officiellement validée.</div>
+    <div class="line" data-delay="11000">Votre première mission commence maintenant.</div>
+    <div class="line" data-delay="14000">Vous devez prouver vos capacités d'agent.</div>
+    <div class="line" data-delay="17000">Terminez l'entraînement.</div>
+    <div class="line" data-delay="20000">Votre prochaine destination sera révélée.</div>
+    <div class="line glitch" data-delay="24000">Attention.</div>
+    <div class="line" data-delay="27000">Cette mission contient un niveau inhabituel de danger.</div>
+    <div class="line" data-delay="31000">Principalement parce que votre agent accompagnateur pense avoir tout prévu.</div>
+    <div class="line" data-delay="36000">Bonne chance.</div>
+    <div class="line" data-delay="40000">— — — — — — — — — — — — —</div>
+    <div class="line" data-delay="42000">[FIN DE TRANSMISSION]</div>
+
+    <div id="mission-valid">MISSION VALIDÉE</div>
+    <div id="destination">SAHANA</div>
+</div>
+
+<script>
+function startVideo() {
+    document.getElementById('play-btn').style.display = 'none';
+    document.getElementById('screen').style.display = 'block';
+
+    const lines = document.querySelectorAll('.line');
+    lines.forEach(line => {
+        const delay = parseInt(line.dataset.delay);
+        setTimeout(() => {
+            line.classList.add('visible');
+        }, delay);
+    });
+
+    setTimeout(() => {
+        document.getElementById('mission-valid').style.opacity = '1';
+        document.getElementById('mission-valid').style.transition = 'opacity 2s';
+    }, 45000);
+
+    setTimeout(() => {
+        document.getElementById('destination').style.opacity = '1';
+        document.getElementById('destination').style.transition = 'opacity 2s';
+    }, 48000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ENTRAÎNEMENT AGENT — AGENCE POUTOU</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #0a0a0a;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+#boot-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: #0f0;
+}
+#boot-text {
+    font-size: 14px;
+    line-height: 1.8;
+    max-width: 600px;
+    white-space: pre-wrap;
+}
+#game-container {
+    max-width: 700px;
+    width: 100%;
+    display: none;
+}
+.header {
+    text-align: center;
+    border-bottom: 2px solid #0f0;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+}
+.header h1 { font-size: 22px; letter-spacing: 4px; }
+.header p { font-size: 12px; color: #888; margin-top: 5px; }
+.phase {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+.phase.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+#code-display {
+    font-size: 36px;
+    letter-spacing: 8px;
+    text-align: center;
+    margin: 30px 0;
+    color: #fff;
+    text-shadow: 0 0 10px #0f0;
+}
+#code-input {
+    background: #111;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    letter-spacing: 6px;
+    padding: 10px 20px;
+    width: 100%;
+    text-align: center;
+    margin: 20px 0;
+}
+#code-input:focus { outline: none; box-shadow: 0 0 15px rgba(0,255,0,0.3); }
+
+.cipher-box {
+    background: #111;
+    border: 1px solid #333;
+    padding: 20px;
+    margin: 20px 0;
+    font-size: 16px;
+    line-height: 1.8;
+}
+.cipher-text { color: #ff0; letter-spacing: 2px; }
+.hint { color: #888; font-size: 12px; margin-top: 10px; }
+
+#target-zone {
+    width: 100%;
+    height: 200px;
+    background: #111;
+    border: 2px solid #333;
+    position: relative;
+    margin: 20px 0;
+    overflow: hidden;
+}
+#target {
+    width: 50px;
+    height: 50px;
+    background: #f00;
+    border-radius: 50%;
+    position: absolute;
+    cursor: crosshair;
+    display: none;
+    box-shadow: 0 0 15px #f00;
+}
+#target.hit { background: #0f0; box-shadow: 0 0 15px #0f0; }
+
+.logic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+.logic-cell {
+    aspect-ratio: 1;
+    background: #111;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.logic-cell:hover { border-color: #0f0; }
+.logic-cell.active { background: #0f0; color: #000; border-color: #0f0; }
+
+.btn {
+    background: transparent;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    padding: 12px 30px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    margin: 10px 5px;
+    transition: all 0.3s;
+}
+.btn:hover { background: #0f0; color: #000; }
+.btn:disabled { border-color: #333; color: #555; cursor: not-allowed; }
+
+#progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #222;
+    margin: 20px 0;
+}
+#progress-fill {
+    height: 100%;
+    background: #0f0;
+    width: 0%;
+    transition: width 0.5s;
+}
+#status { text-align: center; font-size: 12px; color: #888; margin-top: 10px; }
+
+#success-screen {
+    display: none;
+    text-align: center;
+    padding: 50px 20px;
+}
+#success-screen h2 { font-size: 32px; color: #0f0; margin-bottom: 20px; }
+#success-screen .big-text { font-size: 48px; letter-spacing: 12px; color: #fff; margin: 30px 0; text-shadow: 0 0 20px #0f0; }
+
+.scanline {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 999;
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div id="boot-screen">
+    <div id="boot-text"></div>
+</div>
+
+<div id="game-container">
+    <div class="header">
+        <h1>PROTOCOLE D'ENTRAÎNEMENT</h1>
+        <p>AGENCE POUTOU — NIVEAU RECRUE</p>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        <div id="status">PHASE 1/4 — MÉMORISATION</div>
+    </div>
+
+    <div class="phase active" id="phase1">
+        <h3 style="text-align:center; margin-bottom:10px;">ÉPREUVE 1 : MÉMORISATION DE CODE</h3>
+        <p style="text-align:center; color:#888; font-size:12px;">Mémorisez le code affiché. Vous avez 5 secondes.</p>
+        <div id="code-display">▒▒▒▒▒▒</div>
+        <input type="text" id="code-input" placeholder="ENTREZ LE CODE" maxlength="6" autocomplete="off">
+        <div style="text-align:center;">
+            <button class="btn" id="start-mem" onclick="startMemory()">DÉMARRER</button>
+            <button class="btn" id="verify-mem" onclick="verifyMemory()" disabled>VÉRIFIER</button>
+        </div>
+        <p id="mem-feedback" style="text-align:center; margin-top:15px; min-height:20px;"></p>
+    </div>
+
+    <div class="phase" id="phase2">
+        <h3 style="text-align:center; margin-bottom:10px;">ÉPREUVE 2 : DÉCHIFFREMENT</h3>
+        <p style="text-align:center; color:#888; font-size:12px;">Déchiffrez le message. Chaque lettre est décalée de +3.</p>
+        <div class="cipher-box">
+            <p class="cipher-text">PHUFHUH GHVWLQDWLRQ</p>
+            <p class="hint">Indice : A → D, B → E, C → F...</p>
+        </div>
+        <input type="text" id="cipher-input" class="btn" style="width:100%; text-align:center; background:#111;" placeholder="VOTRE RÉPONSE">
+        <div style="text-align:center;">
+            <button class="btn" onclick="verifyCipher()">VALIDER</button>
+        </div>
+        <p id="cipher-feedback" style="text-align:center; margin-top:15px; min-height:20px;"></p>
+    </div>
+
+    <div class="phase" id="phase3">
+        <h3 style="text-align:center; margin-bottom:10px;">ÉPREUVE 3 : RÉFLEXES</h3>
+        <p style="text-align:center; color:#888; font-size:12px;">Cliquez sur la cible rouge dès qu'elle apparaît. 5 cibles à toucher.</p>
+        <div id="target-zone">
+            <div id="target"></div>
+        </div>
+        <p style="text-align:center;">Cibles touchées : <span id="hits" style="color:#0f0; font-size:20px;">0</span> / 5</p>
+        <div style="text-align:center;">
+            <button class="btn" id="start-reflex" onclick="startReflex()">DÉMARRER L'ÉPREUVE</button>
+        </div>
+    </div>
+
+    <div class="phase" id="phase4">
+        <h3 style="text-align:center; margin-bottom:10px;">ÉPREUVE 4 : LOGIQUE</h3>
+        <p style="text-align:center; color:#888; font-size:12px;">Activez les cellules pour former un motif symétrique horizontal.</p>
+        <div class="logic-grid" id="logic-grid"></div>
+        <div style="text-align:center;">
+            <button class="btn" onclick="verifyLogic()">VALIDER LE MOTIF</button>
+            <button class="btn" onclick="resetLogic()">RÉINITIALISER</button>
+        </div>
+        <p id="logic-feedback" style="text-align:center; margin-top:15px; min-height:20px;"></p>
+    </div>
+
+    <div id="success-screen">
+        <h2>ENTRAÎNEMENT TERMINÉ</h2>
+        <p>Vous avez prouvé vos capacités d'agent.</p>
+        <div class="big-text">MISSION VALIDÉE</div>
+        <p style="color:#888; margin-top:20px;">Votre prochaine destination sera révélée dans le dossier.</p>
+        <button class="btn" onclick="location.reload()" style="margin-top:30px;">REJOUER</button>
+    </div>
+</div>
+
+<script>
+const bootLines = [
+    "> AGENCE POUTOU — SYSTÈME D'ENTRAÎNEMENT",
+    "> INITIALISATION...",
+    "> CHARGEMENT DES PROTOCOLES...",
+    "> VÉRIFICATION DE L'IDENTITÉ...",
+    "> AGENT BIBOU — CONFIRMÉ",
+    "> NIVEAU : RECRUE",
+    "> 4 ÉPREUVES REQUISES",
+    "> PRÊT.",
+    "",
+    "> APPUYEZ SUR ENTRÉE POUR COMMENCER"
+];
+let bootIdx = 0;
+const bootText = document.getElementById('boot-text');
+function typeBoot() {
+    if (bootIdx < bootLines.length) {
+        bootText.textContent += bootLines[bootIdx] + '\n';
+        bootIdx++;
+        setTimeout(typeBoot, bootIdx === bootLines.length - 1 ? 100 : 400);
+    }
+}
+typeBoot();
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && bootIdx >= bootLines.length) {
+        document.getElementById('boot-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+    }
+});
+document.getElementById('boot-screen').addEventListener('click', function() {
+    if (bootIdx >= bootLines.length) {
+        document.getElementById('boot-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+    }
+});
+
+let currentPhase = 1;
+const totalPhases = 4;
+
+function updateProgress() {
+    const pct = ((currentPhase - 1) / totalPhases) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('status').textContent = `PHASE ${currentPhase}/${totalPhases}`;
+}
+
+function nextPhase() {
+    document.getElementById(`phase${currentPhase}`).classList.remove('active');
+    currentPhase++;
+    updateProgress();
+    if (currentPhase <= totalPhases) {
+        document.getElementById(`phase${currentPhase}`).classList.add('active');
+    } else {
+        document.getElementById('success-screen').style.display = 'block';
+        document.getElementById('progress-fill').style.width = '100%';
+        document.getElementById('status').textContent = 'ENTRAÎNEMENT COMPLÉTÉ';
+    }
+}
+
+let secretCode = '';
+function startMemory() {
+    secretCode = String(Math.floor(100000 + Math.random() * 900000));
+    document.getElementById('code-display').textContent = secretCode;
+    document.getElementById('code-input').value = '';
+    document.getElementById('code-input').disabled = true;
+    document.getElementById('verify-mem').disabled = true;
+    document.getElementById('start-mem').disabled = true;
+    document.getElementById('mem-feedback').textContent = '';
+    let timeLeft = 5;
+    const interval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            document.getElementById('code-display').textContent = '▒▒▒▒▒▒';
+            document.getElementById('code-input').disabled = false;
+            document.getElementById('code-input').focus();
+            document.getElementById('verify-mem').disabled = false;
+        }
+    }, 1000);
+}
+
+function verifyMemory() {
+    const input = document.getElementById('code-input').value;
+    const feedback = document.getElementById('mem-feedback');
+    if (input === secretCode) {
+        feedback.innerHTML = '<span style="color:#0f0;">✓ CODE CORRECT — ACCÈS AUTORISÉ</span>';
+        setTimeout(nextPhase, 1500);
+    } else {
+        feedback.innerHTML = '<span style="color:#f00;">✗ CODE INCORRECT — RÉESSAYEZ</span>';
+        document.getElementById('code-input').value = '';
+        document.getElementById('code-input').focus();
+    }
+}
+
+function verifyCipher() {
+    const input = document.getElementById('cipher-input').value.toUpperCase().trim();
+    const feedback = document.getElementById('cipher-feedback');
+    if (input === 'MESSAGE DESTINATION' || input === 'DESTINATION' || input === 'MESSAGE') {
+        feedback.innerHTML = '<span style="color:#0f0;">✓ MESSAGE DÉCHIFFRÉ — DESTINATION CONFIRMÉE</span>';
+        setTimeout(nextPhase, 1500);
+    } else {
+        feedback.innerHTML = '<span style="color:#f00;">✗ DÉCHIFFREMENT INCORRECT</span>';
+    }
+}
+
+let hits = 0;
+let reflexTimeout;
+function startReflex() {
+    hits = 0;
+    document.getElementById('hits').textContent = hits;
+    document.getElementById('start-reflex').disabled = true;
+    spawnTarget();
+}
+
+function spawnTarget() {
+    if (hits >= 5) {
+        setTimeout(nextPhase, 1000);
+        return;
+    }
+    const zone = document.getElementById('target-zone');
+    const target = document.getElementById('target');
+    const maxX = zone.clientWidth - 50;
+    const maxY = zone.clientHeight - 50;
+    target.style.left = Math.random() * maxX + 'px';
+    target.style.top = Math.random() * maxY + 'px';
+    target.style.display = 'block';
+    target.classList.remove('hit');
+    const duration = Math.max(800, 2000 - hits * 200);
+    reflexTimeout = setTimeout(() => {
+        target.style.display = 'none';
+        spawnTarget();
+    }, duration);
+}
+
+document.getElementById('target').addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+    clearTimeout(reflexTimeout);
+    hits++;
+    document.getElementById('hits').textContent = hits;
+    this.classList.add('hit');
+    setTimeout(() => {
+        this.style.display = 'none';
+        spawnTarget();
+    }, 200);
+});
+
+const gridSize = 9;
+let logicState = new Array(gridSize).fill(false);
+const logicGrid = document.getElementById('logic-grid');
+
+for (let i = 0; i < gridSize; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'logic-cell';
+    cell.dataset.idx = i;
+    cell.textContent = i + 1;
+    cell.addEventListener('click', () => {
+        logicState[i] = !logicState[i];
+        cell.classList.toggle('active', logicState[i]);
+    });
+    logicGrid.appendChild(cell);
+}
+
+function resetLogic() {
+    logicState.fill(false);
+    document.querySelectorAll('.logic-cell').forEach(c => c.classList.remove('active'));
+    document.getElementById('logic-feedback').textContent = '';
+}
+
+function verifyLogic() {
+    const top = logicState.slice(0, 3);
+    const bottom = logicState.slice(6, 9);
+    const middle = logicState.slice(3, 6);
+    const symmetric = top.every((v, i) => v === bottom[i]);
+    const middleFull = middle.every(v => v);
+    const feedback = document.getElementById('logic-feedback');
+    if (symmetric && middleFull) {
+        feedback.innerHTML = '<span style="color:#0f0;">✓ MOTIF SYMÉTRIQUE VALIDÉ</span>';
+        setTimeout(nextPhase, 1500);
+    } else {
+        feedback.innerHTML = '<span style="color:#f00;">✗ MOTIF INCORRECT — CHERCHEZ LA SYMÉTRIE</span>';
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMMUNICATION DU BARON — TRANSMISSION 02</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #000;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+#screen {
+    width: 100%;
+    max-width: 800px;
+    padding: 40px;
+    text-align: center;
+}
+.line {
+    font-size: 16px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(20px);
+    margin-bottom: 12px;
+    text-shadow: 0 0 8px rgba(200,200,200,0.2);
+}
+.line.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.8s ease;
+}
+.line.baron { color: #ff4444; text-shadow: 0 0 15px rgba(255,0,0,0.4); }
+.line.gerard { color: #888; font-style: italic; font-size: 13px; }
+.scanline {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 100;
+}
+.static {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.03);
+    pointer-events: none;
+    z-index: 99;
+    animation: static 0.1s infinite;
+}
+@keyframes static {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.5; }
+}
+#end-text {
+    font-size: 24px;
+    color: #ff0000;
+    letter-spacing: 6px;
+    margin-top: 30px;
+    opacity: 0;
+}
+#play-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 50px;
+    background: transparent;
+    border: 2px solid #ff4444;
+    color: #ff4444;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    z-index: 200;
+}
+#play-btn:hover {
+    background: #ff4444;
+    color: #000;
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="static"></div>
+
+<button id="play-btn" onclick="startVideo()">▶ DÉCRYPTER LA TRANSMISSION 02</button>
+
+<div id="screen" style="display:none;">
+    <div class="line" data-delay="500">[COMMUNICATION DU BARON]</div>
+    <div class="line" data-delay="1200">[TRANSMISSION 02]</div>
+    <div class="line" data-delay="2000">[SIGNAL FAIBLE — PARASITES DÉTECTÉS]</div>
+    <div class="line" data-delay="3500">— — — — — — — — — — — — — — — — —</div>
+
+    <div class="line baron" data-delay="5000">Agent Bibou...</div>
+    <div class="line baron" data-delay="7500">Je dois reconnaître une chose.</div>
+    <div class="line baron" data-delay="10500">Vous êtes plus compétente que prévu.</div>
+    <div class="line baron" data-delay="14000">L'Agence Poutou m'avait habitué à des adversaires moins... efficaces.</div>
+    <div class="line gerard" data-delay="18000">(Très probablement parce qu'ils avaient engagé Gérard.)</div>
+    <div class="line baron" data-delay="22000">Mais votre enquête touche à sa fin.</div>
+    <div class="line baron" data-delay="25500">Vous cherchez mon visage.</div>
+    <div class="line baron" data-delay="28500">Vous cherchez mon identité.</div>
+    <div class="line baron" data-delay="31500">Vous pensez pouvoir me reconnaître.</div>
+    <div class="line baron" data-delay="35000">Alors essayez.</div>
+    <div class="line baron" data-delay="39000">J'ai laissé derrière moi neuf possibilités.</div>
+    <div class="line baron" data-delay="43000">Neuf visages.</div>
+    <div class="line baron" data-delay="46000">Neuf histoires.</div>
+    <div class="line baron" data-delay="49000">Mais une seule vérité.</div>
+    <div class="line baron" data-delay="53000" style="font-size:20px; font-weight:bold;">Trouvez-moi.</div>
+    <div class="line baron" data-delay="57000">Si vous en êtes capable.</div>
+    <div class="line baron" data-delay="61000">— — — — — — — — — — — — — — — — —</div>
+    <div class="line baron" data-delay="64000">— Le Baron du Rideau Noir</div>
+    <div class="line" data-delay="70000">— — — — — — — — — — — — — — — — —</div>
+    <div class="line" data-delay="73000">[LOCALISATION PERDUE]</div>
+    <div id="end-text">SIGNAL INTERROMPU</div>
+</div>
+
+<script>
+function startVideo() {
+    document.getElementById('play-btn').style.display = 'none';
+    document.getElementById('screen').style.display = 'block';
+
+    const lines = document.querySelectorAll('.line');
+    lines.forEach(line => {
+        const delay = parseInt(line.dataset.delay);
+        setTimeout(() => {
+            line.classList.add('visible');
+        }, delay);
+    });
+
+    setTimeout(() => {
+        document.getElementById('end-text').style.opacity = '1';
+        document.getElementById('end-text').style.transition = 'opacity 2s';
+    }, 76000);
+}
+</script>
+</body>
+</html>
